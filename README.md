@@ -4,11 +4,11 @@ OOP-II Exercises
 List 3:
 
     - Number 1 needs improvement
-    - Number 2  needs improvement
-    - Number 3  needs improvement
+    - Number 2 needs improvement
+    - Number 3 needs improvement
 List 4:
 
-    - Number 2  work fine
+    - Number 2 work fine
 List 5:
 
     - Number 1 working on this
