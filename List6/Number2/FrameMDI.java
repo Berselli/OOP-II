@@ -5,12 +5,18 @@
  */
 package OOPII.List6.Number2;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.filechooser.FileSystemView;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 
 /**
  *
@@ -23,12 +29,54 @@ public class FrameMDI extends javax.swing.JFrame {
      */
     public FrameMDI() {
         initComponents();
+        
+        
+        // Incorporating an undo and redo listener to jEditorPane2
+        jEditorPane2.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        
+        // Creating the undo action in the key listener
+        jEditorPane2.getActionMap().put("Undo",
+            new AbstractAction("Undo") {
+                public void actionPerformed(ActionEvent evt) {
+                    try {
+                        if (undo.canUndo()) {
+                            undo.undo();
+                        }
+                    } catch (CannotUndoException e) {
+                    }
+                }
+            });
+            
+        // Creating Key Mapping for Undo Action "control Z"
+        jEditorPane2.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
+        
+        // Creating the redo action in the key listener
+        jEditorPane2.getActionMap().put("Redo",
+            new AbstractAction("Redo") {
+                public void actionPerformed(ActionEvent evt) {
+                    try {
+                        if (undo.canRedo()) {
+                            undo.redo();
+                        }
+                    } catch (CannotRedoException e) {
+                    }
+                }
+            });
+        
+        // Creating Key Mapping for Redo Action
+        jEditorPane2.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
+        
     }
     
     String filePath;
     String textInFile;
     String defaultPath = System.getProperty("user.dir");
     FileFilter filter = new FileNameExtensionFilter("Text files", "txt");
+    final UndoManager undo = new UndoManager();
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -46,6 +94,7 @@ public class FrameMDI extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
@@ -82,6 +131,14 @@ public class FrameMDI extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem3);
 
+        jMenuItem6.setText("Save as");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem6);
+
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Edit");
@@ -95,6 +152,11 @@ public class FrameMDI extends javax.swing.JFrame {
         jMenu2.add(jMenuItem4);
 
         jMenuItem5.setText("Redo");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
         jMenu2.add(jMenuItem5);
 
         jMenuBar1.add(jMenu2);
@@ -106,9 +168,9 @@ public class FrameMDI extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(20, 89, Short.MAX_VALUE)
+                .addGap(20, 86, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 859, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(85, 85, 85))
+                .addGap(88, 88, 88))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -121,14 +183,32 @@ public class FrameMDI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    //SAVE FILE
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
-        // TODO add your handling code here:
-        //FileRW.writeFile(jEditorPane2.getText());
+
+        if(jEditorPane2.getText().length() > 0){
+            if(filePath != null){
+                if(!FileRW.readFile(filePath).equals(jEditorPane2.getText()))
+                {
+                    FileRW.writeFile(filePath, jEditorPane2.getText());
+                }
+            } else {
+                JFileChooser fch = new JFileChooser(defaultPath);
+                fch.setFileFilter(filter);
+                int returnVal = fch.showOpenDialog(null);
+                if (returnVal == JFileChooser.APPROVE_OPTION){
+                    filePath = fch.getSelectedFile().getAbsolutePath();
+                    FileRW.writeFile(filePath, jEditorPane2.getText());
+                }
+            }
+        }
         
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
+    //OPEN FILE
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-        // OPEN FILE
+
         if(filePath != null){
             // Different text
             if(!FileRW.readFile(filePath).equals(jEditorPane2.getText()))
@@ -169,9 +249,9 @@ public class FrameMDI extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
+    // NEW FILE
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        // NEW FILE
-        
+
         if(filePath != null){
             if(!FileRW.readFile(filePath).equals(jEditorPane2.getText()))
             {
@@ -199,24 +279,44 @@ public class FrameMDI extends javax.swing.JFrame {
             }            
         }
         
+        filePath = null;
         jEditorPane2.setText("");
-        
-        /*
-        JFileChooser fch = new JFileChooser();
-        int returnVal = fch.showOpenDialog(null);
-        
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            filePath = fch.getSelectedFile().getAbsolutePath();
-            
-        }
-        */
         
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    // UNDO THE TEXT
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
-        // UNDO THE TEXT
+        try {
+            if (undo.canUndo()) {
+                undo.undo();
+            }
+        } catch (CannotUndoException e) {
+        }
         
     }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    //SAVE AS
+    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        if(jEditorPane2.getText().length() > 0){
+            JFileChooser fch = new JFileChooser(defaultPath);
+            fch.setFileFilter(filter);
+            int returnVal = fch.showOpenDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION){
+                filePath = fch.getSelectedFile().getAbsolutePath();
+                FileRW.writeFile(filePath, jEditorPane2.getText());
+            }
+        }
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    // REDO TEXT
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        try {
+            if (undo.canRedo()) {
+                undo.redo();
+            }
+        } catch (CannotRedoException e) {
+        }
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -263,6 +363,7 @@ public class FrameMDI extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
 }
