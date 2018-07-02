@@ -35,6 +35,7 @@ public class FrameMDI extends javax.swing.JFrame {
         jEditorPane2.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
+                
             }
         });
         
