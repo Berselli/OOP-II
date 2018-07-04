@@ -6,8 +6,11 @@
 package OOPII.List6.Number2;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.UndoableEditEvent;
@@ -100,8 +103,13 @@ public class FrameMDI extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                onClose(evt);
+            }
+        });
 
         jEditorPane2.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
         jScrollPane2.setViewportView(jEditorPane2);
@@ -318,6 +326,45 @@ public class FrameMDI extends javax.swing.JFrame {
         } catch (CannotRedoException e) {
         }
     }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+     //setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    
+    @Override
+    public void dispose() {
+        if(filePath != null){
+            if(!FileRW.readFile(filePath).equals(jEditorPane2.getText()))
+            {
+                int returnVal = JOptionPane.showConfirmDialog(jMenu1, "Do you want to save the file?", "Save option",JOptionPane.YES_NO_OPTION);
+                if(returnVal == JOptionPane.YES_OPTION){
+                    FileRW.writeFile(filePath, jEditorPane2.getText());
+                }                
+            }
+        } else {
+            if(jEditorPane2.getText().length() > 0 ){
+                int returnVal = JOptionPane.showConfirmDialog(jMenu1, "Do you want to save the file?", "Save option",JOptionPane.YES_NO_OPTION);
+                if(returnVal == JOptionPane.YES_OPTION){
+                    if(filePath != null){
+                        FileRW.writeFile(filePath, jEditorPane2.getText());
+                    } else {
+                        JFileChooser fch = new JFileChooser(defaultPath);
+                        fch.setFileFilter(filter);
+                        returnVal = fch.showOpenDialog(null);
+                        if (returnVal == JFileChooser.APPROVE_OPTION){
+                            filePath = fch.getSelectedFile().getAbsolutePath();
+                            FileRW.writeFile(filePath, jEditorPane2.getText());
+                        }                    
+                    }                    
+                }
+            }            
+        }
+        super.dispose();
+    }
+    
+    
+    private void onClose(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onClose
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_onClose
 
     /**
      * @param args the command line arguments
